@@ -1,0 +1,67 @@
+---
+title: "Intro to Statistical Thinking exercises"
+output: pdf_document
+date: "2023-11-14"
+---
+
+# 2.3.1
+```{r}
+#experimenting with binomial distribution
+dbinom(6, size=9, prob=0.3)
+```
+
+# 2.4.1 Grid approximation
+```{r}
+#define grid
+p_grid <- seq(from=0, to=1, length.out=1000)
+
+#define prior
+#prior <- rep(1,20)
+#prior <- ifelse(p_grid < 0.5, 0, 1)
+prior <- exp(-5*abs(p_grid-0.5))
+
+#compute likeliood at each value in grid
+likelihood <- dbinom(6, size=9, prob=p_grid)
+
+#compute product of likelihood and prior
+unstd.posterior <- likelihood*prior
+
+#standardize the posterior, so it sums to 1
+posterior <- unstd.posterior / sum(unstd.posterior)
+
+```
+
+```{r}
+plot(p_grid, posterior, type="b", xlab="probability of water", ylab="posterior probability")
+mtext("20 points")
+```
+
+# 2.4.2 Quadratic approximation
+```{r}
+library(rethinking)
+globe.qa <- map(
+  alist(
+    w ~ dbinom(9, p), #binomial likelihood 
+    p ~ dunif(0, 1) #uniform prior
+  ),
+  data=list(w=6)
+)
+#display summary of quadratic approximation
+precis(globe.qa)
+```
+
+```{r}
+#analytical calculation
+w <- 6
+n <- 9
+curve(dbeta(x, w+1, n-w+1), from=0,to=1)
+#quadratic approximation
+curve(dnorm(x, 0.67, 0.16), lty=2,add=T)
+```
+
+
+
+
+
+
+
